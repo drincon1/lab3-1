@@ -5,26 +5,36 @@ import threading
 
 IP = 'localhost'
 PUERTO = 10000
+ADDR = (IP,PUERTO)
+FORMAT = "utf-8"
+SERVER_DATA_PATH = "server-data"
+cont=0
 
 def thread_function(connection,client_address):
 	print(f"[SERVIDOR] {client_address} conectado")
-	connection.send("Usted se ha conectado exitosamente al servidor")
+	connection.send("Usted se ha conectado exitosamente al servidor".encode(FORMAT))
 	while True:
-		data = connection.recv(16)
-		print('received{!r}'.format(data))
-		if data:
-			print('sending back to the client')
-			connection.sendall(data)
-		else:
-			print('no data from', client_address)
+		data=input("> ")
+		data = data.split(" ")
+		filePath = data[0]
+		numClientes = data[1]
+		
+		with open(f"{filePath}", "r") as f:
+			text = f.read()
+		fileName = filePath.split("/")[-1]
+		send_data = f"{fileName}@{text}"
+		if(threading.activeCount()<numClientes):
 			break
+		if(cont<numClientes):
+			conn.send(send_data.encode(FORMAT))
+			cont+=1
+		
 
 
 def main():
 	print("[SERVIDOR] INICIALIZANDO SERVIDOR")
 	servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server_address = (IP,PUERTO)
-	servidor.bind(server_address)
+	servidor.bind(ADDR)
 	servidor.listen()
 	print(f"[SERVIDOR] Servidor está escuchando en {IP}:{PUERTO}")
 
