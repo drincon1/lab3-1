@@ -1,40 +1,34 @@
-# Archivo .py con el codigo del servidor
 import socket
 import os
-import threading
+from _thread import *
 
-IP = 'localhost'
-PUERTO = 10000
+ServerSocket = socket.socket()
+host = '127.0.0.1'
+port = 1233
+ThreadCount = 0
+try:
+    ServerSocket.bind((host, port))
+except socket.error as e:
+    print(str(e))
 
-def thread_function(connection,client_address):
-	print(f"[SERVIDOR] {client_address} conectado")
-	connection.send("Usted se ha conectado exitosamente al servidor")
-	while True:
-		data = connection.recv(16)
-		print('received{!r}'.format(data))
-		if data:
-			print('sending back to the client')
-			connection.sendall(data)
-		else:
-			print('no data from', client_address)
-			break
+print('Waiting for a Connection..')
+ServerSocket.listen(5)
 
 
-def main():
-	print("[SERVIDOR] INICIALIZANDO SERVIDOR")
-	servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server_address = (IP,PUERTO)
-	servidor.bind(server_address)
-	servidor.listen()
-	print(f"[SERVIDOR] Servidor está escuchando en {IP}:{PUERTO}")
+def threaded_client(connection):
+    connection.send(str.encode('Welcome to the Server'))
+    while True:
+        data = connection.recv(2048)
+        reply = 'Server Says: ' + data.decode('utf-8')
+        if not data:
+            break
+        connection.sendall(str.encode(reply))
+    connection.close()
 
-	print("[SERVIDOR] ESPERANDO CONEXIONES")
-	while True:
-		connection, client_address = servidor.accept()
-		cliente = threading.Thread(target=thread_function, args=(connection,client_address))
-		cliente.start()
-		print(f"[CONEXIONES ACTIVAS] {threading.activeCount() - 1}")
-
-
-if __name__ == "__main__":
-    main()
+while True:
+    Client, address = ServerSocket.accept()
+    print('Connected to: ' + address[0] + ':' + str(address[1]))
+    start_new_thread(threaded_client, (Client, ))
+    ThreadCount += 1
+    print('Thread Number: ' + str(ThreadCount))
+ServerSocket.close()
