@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 
 #IP = "localhost"
-IP = "192.168.124.139"
+IP = "172.16.21.129" # IMPORTANTE: ¡Verificar que la IP sea la misma a la del computador!
 PUERTO = 5000
 num_clientes = 0
 ruta_archivo = ""
@@ -17,24 +17,25 @@ tamano = 0
 #----------------------------------------------------------------
 def thread_function(connection,client_address):
 	# Informa el puerto del cliente
-	print(f"[SERVIDOR] {client_address} conectado")
+	print(f"[SERVIDOR] El cliente {threading.current_thread().getName()} se ha conectado a través de {client_address[1]}")
 	#Pregunta si desea comenzar la transferencia de archivos
 	connection.send("[SERVIDOR] ¿Desea comenzar la transferencia de archivos?".encode("utf-8"))
 	data = connection.recv(1024).decode("utf-8")
 	try:
-		print(f'[SERVIDOR] Se ha recibido {data}')
+		print(f'[SERVIDOR] Se ha recibido {data} del {threading.current_thread().getName()}')
 		if data == "OK":
 			# Se busca el archivo deseado
 			with open(ruta_archivo, "r") as f:
 				text = f.read()
 				# Se calcula el valor de hash al contenido del archivo
 			f_hash = hashlib.md5(text.encode()).hexdigest().encode('utf-8')
-			print("[SERVIDOR] El hash calculado fue",f_hash)
+			print(f"[SERVIDOR] Para el cliente {threading.current_thread().getName()} el hash calculado fue {f_hash}")
 			# Se envia el hash calculado
 			connection.send(f_hash)
 			# Se espera a todos los clientes
 			print(f"[SERVIDOR] {threading.current_thread().getName()} esperando")
 			barrier.wait()
+			print(f"[SERVIDOR] Todos los clientes han llegado")
 			# Se envia el archivo al cliente
 			print(f'[SERVIDOR] Enviando el archivo a {threading.current_thread().getName()}')
 			# Se inicia el cronómetro
@@ -43,6 +44,7 @@ def thread_function(connection,client_address):
 			# Serviro manda el archivo escogido
 			bytes_e=connection.send(text.encode("utf-8"))
 			print(f'[SERVIDOR] Archivo enviado a {threading.current_thread().getName()}')
+			print(f'[SERVIDOR] Bytes transferidos {bytes_e} para {threading.current_thread().getName()}')
 			# Escribir el archivo log
 			entre_exitosa =""
 			if bytes_e>=tamano:
@@ -52,7 +54,7 @@ def thread_function(connection,client_address):
 			else:
 				entre_exitosa ="NO"
 			now = datetime.today()
-			ruta = f"Logs/S-{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}.txt"
+			ruta = f"Logs/SC{threading.current_thread().getName()[8]}-{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}.txt"
 			file = open(ruta, "w")
 			file.write(f"Nombre del archivo: {ruta_archivo[-9:]}\nTamaño: {ruta_archivo[-9:-4]}\nCliente: {threading.current_thread().getName()}\nEntrega Exitosa: {entre_exitosa}\nTiempo tomado: {laptime}")
 			file.close()
@@ -77,7 +79,7 @@ else:
 
 # Cuántos clientes se manejaran
 num_clientes  = int(input('¿Cuántos clientes quiere conectados?\nOpciones válidas: 1,5,10\n')) + 1
-print(f"[SERVIDOR] Se recibió {num_clientes-1} clientes")
+print(f"[SERVIDOR] Se esperarán {num_clientes-1} clientes")
 
 # Se inicializa el servidor
 print("[SERVIDOR] INICIALIZANDO SERVIDOR")

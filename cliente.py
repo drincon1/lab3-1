@@ -9,7 +9,7 @@ import time
 
 # ---ATRIBUTOS---
 #IP = "localhost"
-IP = "192.168.124.139"
+IP = "172.16.21.129"
 PORT = 5000
 prueba = ""
 ruta_archivo = ""
@@ -20,7 +20,7 @@ def thread_function(tup):
 	# El cliente se conecta al servidor
 	cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	cliente.connect(tup)
-	print(f'[{threading.current_thread().getName()}] conectado')
+	print(f'[{threading.current_thread().getName()}] conectado por el puerto {cliente.getsockname()[1]}')
 	try:
 		# El cliente espera que el servidor le pregunte si quiere empezar la transeferencia de archivos.
 		data = cliente.recv(1024).decode("utf-8")
@@ -28,6 +28,7 @@ def thread_function(tup):
 		print(f"[{threading.current_thread().getName()}] {data}")
 		# Cliente confirma que quiere recibir archivo
 		cliente.send("OK".encode("utf-8"))
+		print(f"[{threading.current_thread().getName()}] OK")
 		# Cliente recibe el hash del contenido del archivo
 		hash_recv = cliente.recv(1024).decode("utf-8")
 		print(f"[{threading.current_thread().getName()}] Recibió el hash {hash_recv}")
@@ -52,6 +53,7 @@ def thread_function(tup):
 		# Si no es el mismo se informa y se acaba el proceso. Si es el mismo se guarda el archivo
 		entre_exitosa = ""
 		if hash_recv == hash_calc:
+			print(f"[{threading.current_thread().getName()}] El hash calculado y el recibido son el mismo. Se procede a guardar el archivo")
 			laptime = round((time.time() - lasttime), 2)
 			entre_exitosa = "SI"
 			ruta = f"ArchivosRecibidos/{threading.current_thread().getName()}-{prueba}.txt"
@@ -64,7 +66,7 @@ def thread_function(tup):
 			print(f"[{threading.current_thread().getName()}] ¡El archivo recibido ha sido modificado!")
 
 		now = datetime.today()
-		ruta = f"Logs/C-{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}.txt"
+		ruta = f"Logs/C{threading.current_thread().getName()[7]}-{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute}-{now.second}.txt"
 		file = open(ruta, "w")
 		file.write(f"Nombre del archivo: {ruta_archivo[-9:]}\nTamaño: {ruta_archivo[-9:-4]}\nCliente: {threading.current_thread().getName()}\nEntrega Exitosa: {entre_exitosa}\nTiempo tomado: {laptime}")
 		file.close()
