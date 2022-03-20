@@ -8,8 +8,8 @@ from datetime import datetime
 import time
 
 # ---ATRIBUTOS---
-IP = "localhost"
-#IP = "172.16.21.129"
+#IP = "localhost"
+IP = "192.168.124.139"
 PORT = 5000
 prueba = ""
 ruta_archivo = ""

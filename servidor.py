@@ -7,8 +7,8 @@ import logging
 from datetime import datetime
 import time
 
-IP = "localhost"
-#IP = "172.16.21.129"
+#IP = "localhost"
+IP = "192.168.124.139"
 PUERTO = 5000
 num_clientes = 0
 ruta_archivo = ""
